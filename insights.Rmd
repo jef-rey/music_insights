@@ -1,0 +1,23 @@
+---
+title: "Music Insights"
+author: "Jeff Anderson"
+output:
+  html_document:
+    df_print: paged
+---
+First, we need to use tidyverse lib for data import and manipulation.
+
+```{r}
+#install.packages("tidyverse")
+library("tidyverse")
+
+survey <- read_csv("https://raw.githubusercontent.com/introdsci/MusicSurvey/master/music-survey.csv")
+preferences <- read_csv("https://raw.githubusercontent.com/introdsci/MusicSurvey/master/preferences-survey.csv")
+
+
+```
+Cleaning dataframes column names:
+```{r}
+colnames(survey)[colnames(survey) == "What is your pseudonym?"] <- "pseudonym"
+colnames(survey)[colnames(survey) == "Year you were born (YYYY)"] <- "birth_year"
+```
