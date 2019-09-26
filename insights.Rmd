@@ -16,8 +16,38 @@ preferences <- read_csv("https://raw.githubusercontent.com/introdsci/MusicSurvey
 
 
 ```
-Cleaning dataframes column names:
+Cleaning dataframes column names in the survey table:
 ```{r}
 colnames(survey)[colnames(survey) == "What is your pseudonym?"] <- "pseudonym"
 colnames(survey)[colnames(survey) == "Year you were born (YYYY)"] <- "birth_year"
+colnames(survey)[colnames(survey) == "Timestamp"] <- "time_submitted"
+colnames(survey)[colnames(survey) == "Which musical instruments/talents do you play? (Select all that apply)"] <- "instrument_list"
+colnames(survey)[colnames(survey) == "Academic Year"] <- "academic_year"
+colnames(survey)[colnames(survey) == "Sex"] <- "sex"
+colnames(survey)[2] <- "pseudonym_generator"
+colnames(survey)[11] <- "favorite_song_link"
+colnames(survey)[10] <- "favorite_song"
+colnames(survey)[9] <- "favorite_artist"
+
+```
+
+
+Loading dplyr and tidyr
+```{r}
+library("dplyr")
+library("tidyr")
+
+
+```
+
+Creating new tables with tibble
+The first table we are creating is a person table with respondents from the survey. 
+```{r}
+Person <- tibble(time_submitted = survey$time_submitted, pseudonym = survey$pseudonym, sex = survey$sex, academic_year = survey$academic_year, major = survey$Major, birth_year = survey$birth_year, pseudonym_generator = survey$pseudonym_generator)
+
+```
+
+Next, we'll create a new table with favorite songs
+```{r}
+Favorite_Song <- tibble(pseudonym = survey$pseudonym, song = survey$favorite_song, artist = survey$favorite_artist, link = survey$favorite_song_link)
 ```
