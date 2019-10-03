@@ -51,3 +51,9 @@ Next, we'll create a new table with favorite songs
 ```{r}
 Favorite_Song <- tibble(pseudonym = survey$pseudonym, song = survey$favorite_song, artist = survey$favorite_artist, link = survey$favorite_song_link)
 ```
+
+Then, we're going to make a ratings table
+```{r}
+ratings <- gather(preferences, artist_song, rating, 3:45)
+```
+
