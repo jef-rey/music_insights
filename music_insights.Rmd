@@ -93,10 +93,8 @@ summary(testing_model)
 We can predict what our linear model will give us and calculate R<sup>2</sup>, the RMSE (or _Root Mean Squared Error_ ) and the MAE (or the _Mean Absolute Error_). These metrics help us to understand what the data is saying. The RMSE is analogous to the standard deviation, or the measure of variation over the entire set of values. It is simply the square root of  the _Mean Squared Error_. 
 
 ```{r}
-predictions <- training_model %>% predict(test)
-#data.frame (R2 = R2(predictions, test$other_ratings), 
-#            RMSE = RMSE(predictions, test$other_ratings),
- #           MAE = MAE(predictions, test$other_ratings))
+#predictions <- training_model %>% predict(test)
+
 R2(predictions, test$other_ratings)
 RMSE(predictions, test$other_ratings)
 MAE(predictions, test$other_ratings)
