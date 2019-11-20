@@ -1,0 +1,103 @@
+---
+title: "part2"
+output: html_document
+---
+
+## Music insights part 2-
+# Regression
+
+First, we are going to want to pull all our data from part 1 and save both as a new file
+
+```{r echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, results='hide'}
+include <- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+include("tidyverse")
+include("knitr")
+include("caret")
+purl("insights.Rmd", output = "part1.r")
+source("part1.r")
+```
+
+We can pick up where we left off by building the following table
+```{r}
+print(Person)
+```
+
+We want to try to add some data so that we can summarize each individual person. 
+Firstly, we are going to change academic level into logical columns, where a `1` will represent yes, and a `0` will represent no. Therefore, a senior student would have a `1, 0` in the two columns, and a sophomore student would have a `0, 0` in the two columns.
+```{r}
+Person$Senior <- ifelse(Person$academic_year == "Senior", 1, 0)
+Person$Junior <- ifelse(Person$academic_year == "Junior", 1, 0)
+Person$Senior <- as.logical(Person$Senior)
+Person$Junior <- as.logical(Person$Junior)
+print(Person)
+```
+
+
+
+We can write a few simple functions to see how a person rated their own songs. 
+We can also summarise how people rated _other_ people's songs, and add that as a column appended to the Person table. 
+The following code snippet was closely modeled after Dr. Buffardi's example done in class.
+```{r}
+Person$favorite_song_rating <- 
+  sapply(Person$pseudonym,function(pseudo){
+    return(
+      ifelse(!is_empty(ratings$rating[ratings$pseudonym==pseudo]),
+        ratings$rating[ratings$pseudonym==pseudo],
+        NA))
+    })
+Person$other_ratings <- 
+  sapply(Person$pseudonym,
+    function(name){
+      fave <- ratings$artist_song[ratings$pseudonym==name]
+      others <- ratings$rating[ratings$artist_song != fave & ratings$pseudonym==name]
+      return(mean(others))
+    }
+  )
+positivity <- lm(data=Person, formula=other_ratings~sex+major+academic_year+birth_year+favorite_song_rating)
+summary(positivity)
+```
+
+
+With this information, we can create a new linear model from which to test cross-validation.
+The validation approach consists of randomly splitting the data into two sets, one set is used to train the model, and the other set is used to test the model.
+
+```{r}
+#Split the data into training and testing sets
+set.seed(333)
+
+person_df <- as_tibble(Person) %>% subset(!is.na(other_ratings) & !is.na(favorite_song_rating))
+
+rating_sample <- createDataPartition(person_df$other_ratings, p = .75, list = FALSE)
+
+train <- Person[rating_sample, ]
+test <- Person[-rating_sample, ]
+
+#this is our training model
+training_model <- lm(other_ratings ~ sex + major + academic_year + birth_year, data = train)
+
+#this is our testing model
+testing_model <- lm(other_ratings ~ sex + major + academic_year + birth_year, data = test)
+```
+
+To see what our training and testing models gave us, we can just print out a summary, like we did with the summary of `positivity`
+```{r}
+summary(training_model)
+summary(testing_model)
+```
+
+
+We can predict what our linear model will give us and calculate R<sup>2</sup>, the RMSE (or _Root Mean Squared Error_ ) and the MAE (or the _Mean Absolute Error_). These metrics help us to understand what the data is saying. The RMSE is analogous to the standard deviation, or the measure of variation over the entire set of values. It is simply the square root of  the _Mean Squared Error_. 
+
+```{r}
+predictions <- training_model %>% predict(test)
+#data.frame (R2 = R2(predictions, test$other_ratings), 
+#            RMSE = RMSE(predictions, test$other_ratings),
+ #           MAE = MAE(predictions, test$other_ratings))
+R2(predictions, test$other_ratings)
+RMSE(predictions, test$other_ratings)
+MAE(predictions, test$other_ratings)
+```
